@@ -57,7 +57,11 @@ export function normalizeNotionId(input: string): string | null {
   return match ? match[1].toLowerCase() : null;
 }
 
-export const richText = (content: string) => [{ type: 'text', text: { content: content.slice(0, 1900) } }];
+/** Notion caps each text object at 2000 characters, so long content is split across several. */
+export const richText = (content: string) => {
+  const chunks = content.match(/[\s\S]{1,1900}/g) ?? [''];
+  return chunks.slice(0, 100).map((c) => ({ type: 'text', text: { content: c } }));
+};
 
 export const plain = (rt: NotionObject[] | undefined) => (rt ?? []).map((t) => t.plain_text ?? t.text?.content ?? '').join('');
 

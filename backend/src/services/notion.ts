@@ -113,7 +113,7 @@ export async function disconnect(userId: string) {
   return getStatus(userId);
 }
 
-interface ExportRecord {
+export interface ExportRecord {
   type: ExportType;
   id: string;
   title: string;
@@ -183,12 +183,17 @@ function buildProperties(schema: NotionObject, rec: ExportRecord): NotionObject 
   return props;
 }
 
-function buildChildren(rec: ExportRecord): NotionObject[] {
+export function buildChildren(rec: ExportRecord): NotionObject[] {
   const blocks: NotionObject[] = [];
-  for (const para of rec.body.split('\n').filter(Boolean).slice(0, 40)) {
+  const todos = (rec.todos ?? []).slice(0, 50);
+  // Notion accepts at most 100 child blocks per request (incl. the footer); fold any overflow into the last paragraph.
+  const paras = rec.body.split('\n').filter(Boolean);
+  const maxParas = 99 - todos.length;
+  if (paras.length > maxParas) paras.splice(maxParas - 1, paras.length, paras.slice(maxParas - 1).join('\n'));
+  for (const para of paras) {
     blocks.push({ object: 'block', type: 'paragraph', paragraph: { rich_text: richText(para) } });
   }
-  for (const todo of rec.todos ?? []) {
+  for (const todo of todos) {
     blocks.push({ object: 'block', type: 'to_do', to_do: { rich_text: richText(todo.slice(4)), checked: todo.startsWith('[x]') } });
   }
   blocks.push({ object: 'block', type: 'paragraph', paragraph: { rich_text: richText(`Synced from StudentOS · ${new Date().toISOString()}`) } });
@@ -334,7 +339,7 @@ export async function importFromNotion(userId: string, kind: ImportType) {
         else { await prisma.task.create({ data: { userId, ...data, tags: 'notion', notionPageId: p.id } }); created++; }
       } else {
         const blocks = (await client.getBlockChildren(p.id)).results;
-        const content = blocksToText(blocks);
+        const content = blocksToText(blocks).replace(/\n?Synced from StudentOS · \S+$/, '');
         const existing = await prisma.note.findFirst({ where: { userId, notionPageId: p.id } });
         if (existing) { await prisma.note.update({ where: { id: existing.id }, data: { title, content } }); updated++; }
         else { await prisma.note.create({ data: { userId, title, content, source: 'notion', tags: 'notion', notionPageId: p.id } }); created++; }
