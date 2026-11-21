@@ -45,7 +45,7 @@ export default function Dashboard() {
               You have about <strong className="text-white">{formatMinutes(data.availableMinutes)}</strong> of study time planned today.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
-              <Button className="bg-white text-brand-700 hover:bg-brand-50" onClick={() => navigate('/app/planner')} icon={<Sparkles className="h-4 w-4" />}>Plan my week</Button>
+              <Button variant="secondary" className="ring-0" onClick={() => navigate('/app/planner')} icon={<Sparkles className="h-4 w-4" />}>Plan my week</Button>
               <Button className="bg-white/15 hover:bg-white/25" onClick={() => navigate('/app/focus')} icon={<Timer className="h-4 w-4" />}>Start focus</Button>
               <Button className="bg-white/15 hover:bg-white/25" onClick={() => navigate('/app/tasks?new=1')} icon={<Plus className="h-4 w-4" />}>Add task</Button>
             </div>

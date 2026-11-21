@@ -122,7 +122,7 @@ export default function Tasks() {
   return (
     <div>
       <PageHeader title="Tasks" description="Everything on your plate — academic, career, personal and clubs." actions={<Button icon={<Plus className="h-4 w-4" />} onClick={() => openForm(null)}>New task</Button>} />
-      <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+      <div className="mb-4 flex flex-col gap-3 2xl:flex-row 2xl:items-center 2xl:justify-between">
         <Tabs<View>
           value={view}
           onChange={setView}
