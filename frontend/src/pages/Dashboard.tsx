@@ -35,7 +35,7 @@ export default function Dashboard() {
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-sm text-brand-100">{today}</p>
-            <h1 className="mt-1 text-2xl font-bold sm:text-3xl">{data.greeting}, {firstName} 👋</h1>
+            <h1 className="mt-1 text-2xl font-bold sm:text-3xl">{data.greeting}, {firstName}</h1>
             <p className="mt-2 max-w-xl text-sm text-brand-100">
               {data.nextDeadline ? (
                 <>Next important deadline: <strong className="text-white">{data.nextDeadline.title}</strong> — {data.nextDeadline.label}.</>

@@ -65,7 +65,7 @@ export default function Onboarding() {
           {step === 0 && (
             <div className="space-y-4">
               <div>
-                <h1 className="text-xl font-bold">Welcome to StudentOS 👋</h1>
+                <h1 className="text-xl font-bold">Welcome to StudentOS</h1>
                 <p className="text-sm text-slate-500">Tell us a bit about your studies so we can personalise your workspace.</p>
               </div>
               <Field label="Your name">{(id) => <Input id={id} value={form.name} onChange={(e) => set('name', e.target.value)} />}</Field>

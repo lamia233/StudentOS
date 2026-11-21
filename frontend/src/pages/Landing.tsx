@@ -170,7 +170,7 @@ function DashboardPreview() {
       <div className="rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl shadow-brand-500/10 dark:border-slate-800 dark:bg-slate-900">
         <div className="grid gap-3 rounded-xl bg-slate-50 p-4 text-left dark:bg-slate-950 md:grid-cols-3">
           <div className="rounded-xl bg-white p-4 shadow-card dark:bg-slate-900 md:col-span-2">
-            <p className="text-xs font-medium text-slate-500">Good morning, Nusrat 👋</p>
+            <p className="text-xs font-medium text-slate-500">Good morning, Nusrat</p>
             <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">Today's priorities</p>
             <ul className="mt-3 space-y-2">
               {rows.map((r) => (
