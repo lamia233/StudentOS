@@ -1,0 +1,370 @@
+// StudentOS data model.
+// SQLite is used for zero-config local development. To migrate to PostgreSQL,
+// change `provider` to "postgresql", point DATABASE_URL at your server and run
+// `npx prisma migrate dev`. No model uses SQLite-specific features.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String    @id @default(cuid())
+  email              String    @unique
+  passwordHash       String
+  name               String
+  university         String?
+  degree             String?
+  semester           String?
+  semesterStart      DateTime?
+  semesterEnd        DateTime?
+  studyHoursPerWeek  Int       @default(14)
+  preferredStudyTime String    @default("evening") // morning | afternoon | evening | night
+  careerGoal         String?
+  onboarded          Boolean   @default(false)
+  isDemo             Boolean   @default(false)
+  demoSeededAt       DateTime?
+  theme              String    @default("system") // light | dark | system
+  notifyDeadlines    Boolean   @default(true)
+  notifyExams        Boolean   @default(true)
+  notifyGoals        Boolean   @default(true)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  courses           Course[]
+  tasks             Task[]
+  assignments       Assignment[]
+  exams             Exam[]
+  events            Event[]
+  studySessions     StudySession[]
+  notes             Note[]
+  careerGoals       CareerGoal[]
+  skills            Skill[]
+  productivity      ProductivityRecord[]
+  notionConnection  NotionConnection?
+  notionSyncLogs    NotionSyncLog[]
+  notifications     Notification[]
+  orgEventInterests OrgEventInterest[]
+  createdOrgEvents  OrganizationEvent[]
+}
+
+model Course {
+  id           String   @id @default(cuid())
+  userId       String
+  name         String
+  code         String
+  instructor   String?
+  credits      Float    @default(3)
+  color        String   @default("#6366f1")
+  semester     String?
+  notes        String?
+  /// JSON array of weekly class meetings: [{ "day": 1, "start": "10:00", "end": "11:30", "room": "R-402" }]
+  schedule     String   @default("[]")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks         Task[]
+  assignments   Assignment[]
+  exams         Exam[]
+  events        Event[]
+  studySessions StudySession[]
+  notesList     Note[]
+
+  @@index([userId])
+}
+
+model Task {
+  id               String    @id @default(cuid())
+  userId           String
+  courseId         String?
+  careerGoalId     String?
+  skillId          String?
+  title            String
+  description      String?
+  priority         String    @default("medium") // low | medium | high | critical
+  status           String    @default("todo") // todo | in_progress | done
+  category         String    @default("academic") // academic | career | personal | organization
+  dueDate          DateTime?
+  estimatedMinutes Int       @default(30)
+  tags             String    @default("") // comma separated
+  recurrence       String    @default("none") // none | daily | weekly
+  completedAt      DateTime?
+  notionPageId     String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course     Course?     @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  careerGoal CareerGoal? @relation(fields: [careerGoalId], references: [id], onDelete: SetNull)
+  skill      Skill?      @relation(fields: [skillId], references: [id], onDelete: SetNull)
+
+  @@index([userId, status])
+  @@index([userId, dueDate])
+}
+
+model Assignment {
+  id             String    @id @default(cuid())
+  userId         String
+  courseId       String
+  title          String
+  description    String?
+  deadline       DateTime
+  estimatedHours Float     @default(3)
+  priority       String    @default("medium")
+  status         String    @default("not_started") // not_started | in_progress | completed
+  progress       Int       @default(0) // 0-100
+  difficulty     String    @default("medium") // easy | medium | hard
+  completedAt    DateTime?
+  notionPageId   String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([userId, deadline])
+}
+
+model Exam {
+  id          String   @id @default(cuid())
+  userId      String
+  courseId    String
+  name        String
+  date        DateTime
+  location    String?
+  topics      String? // newline separated syllabus topics
+  preparation Int      @default(0) // 0-100
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  userId      String
+  courseId    String?
+  title       String
+  description String?
+  start       DateTime
+  end         DateTime
+  allDay      Boolean  @default(false)
+  type        String   @default("personal") // academic | study | exam | assignment | career | personal
+  location    String?
+  source      String   @default("manual") // manual | planner | campus
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course? @relation(fields: [courseId], references: [id], onDelete: SetNull)
+
+  @@index([userId, start])
+}
+
+model StudySession {
+  id              String   @id @default(cuid())
+  userId          String
+  courseId        String?
+  taskId          String?
+  assignmentId    String?
+  examId          String?
+  title           String
+  start           DateTime
+  durationMinutes Int
+  type            String   @default("focus") // focus | pomodoro | manual
+  createdAt       DateTime @default(now())
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course? @relation(fields: [courseId], references: [id], onDelete: SetNull)
+
+  @@index([userId, start])
+}
+
+model Note {
+  id           String   @id @default(cuid())
+  userId       String
+  courseId     String?
+  title        String
+  content      String   @default("")
+  type         String   @default("note") // note | resource | link | lecture | project | research
+  url          String?
+  topic        String?
+  semester     String?
+  tags         String   @default("")
+  source       String   @default("studentos") // studentos | notion | notion-demo
+  notionPageId String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course? @relation(fields: [courseId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+}
+
+model CareerGoal {
+  id          String    @id @default(cuid())
+  userId      String
+  title       String
+  description String?
+  category    String    @default("career") // internship | job | research | learning | higher-study | portfolio | career
+  target      String?
+  deadline    DateTime?
+  notionPageId String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  milestones CareerMilestone[]
+  tasks      Task[]
+
+  @@index([userId])
+}
+
+model CareerMilestone {
+  id          String    @id @default(cuid())
+  goalId      String
+  title       String
+  done        Boolean   @default(false)
+  order       Int       @default(0)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  goal CareerGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([goalId])
+}
+
+model Skill {
+  id           String   @id @default(cuid())
+  userId       String
+  name         String
+  category     String   @default("technical") // technical | soft | language | domain
+  currentLevel Int      @default(1) // 1-10
+  targetLevel  Int      @default(7) // 1-10
+  /// JSON array: [{ "title": "...", "url": "..." }]
+  resources    String   @default("[]")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks Task[]
+
+  @@index([userId])
+}
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  category    String   @default("club") // club | society | department | volunteer | company
+  color       String   @default("#0ea5e9")
+  createdAt   DateTime @default(now())
+
+  events OrganizationEvent[]
+}
+
+model OrganizationEvent {
+  id                   String    @id @default(cuid())
+  organizationId       String
+  createdById          String?
+  title                String
+  description          String?
+  date                 DateTime
+  location             String?
+  registrationDeadline DateTime?
+  category             String    @default("workshop") // hackathon | competition | volunteering | workshop | seminar | social | career
+  createdAt            DateTime  @default(now())
+
+  organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy    User?              @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  interests    OrgEventInterest[]
+
+  @@index([date])
+}
+
+model OrgEventInterest {
+  id        String   @id @default(cuid())
+  userId    String
+  eventId   String
+  status    String   @default("saved") // saved | interested | registered
+  calendarEventId String?
+  createdAt DateTime @default(now())
+
+  user  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event OrganizationEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+}
+
+model ProductivityRecord {
+  id             String   @id @default(cuid())
+  userId         String
+  date           DateTime // start of day (UTC)
+  tasksCompleted Int      @default(0)
+  studyMinutes   Int      @default(0)
+  focusSessions  Int      @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+}
+
+model NotionConnection {
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  mode           String    @default("demo") // demo | live
+  encryptedToken String?
+  targetId       String?
+  targetType     String? // database | page
+  workspaceName  String?
+  targetTitle    String?
+  status         String    @default("disconnected") // connected | disconnected | error
+  lastSyncedAt   DateTime?
+  lastError      String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model NotionSyncLog {
+  id        String   @id @default(cuid())
+  userId    String
+  mode      String // demo | live
+  direction String // export | import
+  itemType  String
+  count     Int      @default(0)
+  status    String   @default("success") // success | error
+  message   String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String   @default("info") // deadline | exam | goal | study | info
+  link      String?
+  read      Boolean  @default(false)
+  dedupeKey String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, read])
+}

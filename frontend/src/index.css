@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-tap-highlight-color: transparent; }
+  :focus-visible { outline: 2px solid #6366f1; outline-offset: 2px; }
+  input[type='datetime-local'], input[type='date'], input[type='time'] { color-scheme: light; }
+  .dark input[type='datetime-local'], .dark input[type='date'], .dark input[type='time'] { color-scheme: dark; }
+}
+
+@layer components {
+  .prose-note h2 { @apply mt-3 mb-1 text-sm font-semibold text-slate-900 dark:text-white; }
+  .prose-note h3 { @apply mt-2 mb-1 text-sm font-semibold; }
+  .prose-note ul { @apply ml-4 list-disc space-y-0.5; }
+  .prose-note p { @apply my-1; }
+  .prose-note code { @apply rounded bg-slate-100 px-1 py-0.5 text-[12px] dark:bg-slate-800; }
+  .prose-note strong { @apply font-semibold text-slate-900 dark:text-white; }
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { @apply rounded-full bg-slate-300 dark:bg-slate-700; }
+}
+
+/* Muted text needs a lighter shade on dark surfaces to stay above WCAG AA contrast. */
+.dark .text-slate-500:not([class*='dark:text-']) { color: theme('colors.slate.400'); }
