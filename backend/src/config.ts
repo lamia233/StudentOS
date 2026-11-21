@@ -29,6 +29,7 @@ export const config = {
   notion: {
     token: env.NOTION_TOKEN || undefined,
     targetId: env.NOTION_TARGET_ID || undefined,
+    ownerEmail: env.NOTION_OWNER_EMAIL?.trim().toLowerCase() || undefined,
     apiBase: 'https://api.notion.com/v1',
     version: '2022-06-28',
   },

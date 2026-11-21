@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { api, registerUser } from './helpers.js';
+import { config } from '../src/config.js';
 
 const inDays = (n: number) => new Date(Date.now() + n * 86_400_000).toISOString();
 
@@ -154,6 +155,22 @@ describe('notion (demo mode)', () => {
     const imp = await api().post('/api/notion/import').set(auth).send({ kind: 'notes' });
     expect(imp.body.mode).toBe('demo');
     expect(JSON.stringify(status.body)).not.toMatch(/secret_|ntn_/);
+  });
+});
+
+describe('notion (server token)', () => {
+  it('only lets NOTION_OWNER_EMAIL use the server-wide token', async () => {
+    const saved = { ...config.notion };
+    Object.assign(config.notion, { token: 'server-token', ownerEmail: 'owner@studentos.test' });
+    try {
+      const { auth } = await registerUser();
+      const status = await api().get('/api/notion/status').set(auth);
+      expect(status.body.liveAvailable).toBe(false);
+      const live = await api().post('/api/notion/connect').set(auth).send({ mode: 'live', targetId: 'abc' });
+      expect(live.status).toBe(400);
+    } finally {
+      Object.assign(config.notion, saved);
+    }
   });
 });
 

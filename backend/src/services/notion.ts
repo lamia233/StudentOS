@@ -13,6 +13,14 @@ export type ImportType = (typeof IMPORT_TYPES)[number];
 
 const DEMO_WORKSPACE = 'Demo Notion Workspace (simulated)';
 
+/** The server-wide token is usable only by the account named in NOTION_OWNER_EMAIL. */
+async function envToken(userId: string): Promise<string | undefined> {
+  const { token, ownerEmail } = config.notion;
+  if (!token || !ownerEmail) return undefined;
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+  return user?.email.toLowerCase() === ownerEmail ? token : undefined;
+}
+
 export async function getStatus(userId: string) {
   const [conn, logs] = await Promise.all([
     prisma.notionConnection.findUnique({ where: { userId } }),
@@ -35,7 +43,7 @@ export async function getStatus(userId: string) {
     lastSyncedAt: conn?.lastSyncedAt ?? null,
     lastError: conn?.lastError ?? null,
     tokenSource: conn?.encryptedToken ? 'user' : conn?.mode === 'live' ? 'env' : null,
-    liveAvailable: !!config.notion.token,
+    liveAvailable: !!(await envToken(userId)),
     defaultTargetConfigured: !!config.notion.targetId,
     linked: { tasks, assignments, notes, goals },
     logs,
@@ -46,7 +54,7 @@ async function liveClient(userId: string) {
   const conn = await prisma.notionConnection.findUnique({ where: { userId } });
   if (!conn || conn.status !== 'connected') throw badRequest('Notion is not connected');
   if (conn.mode !== 'live') return { conn, client: null };
-  const token = conn.encryptedToken ? decrypt(conn.encryptedToken) : config.notion.token;
+  const token = conn.encryptedToken ? decrypt(conn.encryptedToken) : await envToken(userId);
   if (!token) throw badRequest('No Notion token available. Reconnect Notion.');
   return { conn, client: new NotionClient(token) };
 }
@@ -61,7 +69,7 @@ export async function connect(userId: string, input: { mode: 'demo' | 'live'; to
     return getStatus(userId);
   }
 
-  const token = input.token?.trim() || config.notion.token;
+  const token = input.token?.trim() || (await envToken(userId));
   if (!token) throw badRequest('A Notion integration token is required (or set NOTION_TOKEN on the server).');
   const rawTarget = input.targetId?.trim() || config.notion.targetId;
   if (!rawTarget) throw badRequest('A Notion database or page ID is required.');
