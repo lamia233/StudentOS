@@ -198,11 +198,12 @@ export function generateWeekPlan(items: WorkItem[], input: WeekPlanInput, now: D
     while (left >= 15 && cursor.getDate() === day.getDate()) {
       const candidates = filtered
         .map((i) => ({ ...i, remainingMinutes: remaining.get(i.id) ?? 0 }))
-        .filter((i) => i.remainingMinutes > 0 && (!i.dueDate || i.dueDate > cursor));
+        .filter((i) => i.remainingMinutes > 0 && (!i.dueDate || i.dueDate.getTime() - cursor.getTime() >= 15 * MS_PER_MIN));
       const ranked = rankItems(candidates, cursor);
       if (!ranked.length) break;
       const pick = ranked.find((r) => !used.has(r.id)) ?? ranked[0];
-      const minutes = Math.min(block, pick.remainingMinutes, left);
+      const untilDue = pick.dueDate ? Math.floor((pick.dueDate.getTime() - cursor.getTime()) / MS_PER_MIN) : Infinity;
+      const minutes = Math.min(block, pick.remainingMinutes, left, untilDue);
       if (minutes < 15 && pick.remainingMinutes >= 15) break;
       const start = cursor;
       const end = addMinutes(start, minutes);

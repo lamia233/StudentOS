@@ -88,6 +88,16 @@ describe('weekly planner', () => {
     expect(plan.warnings.join(' ')).toContain('Huge project');
   });
 
+  it('cuts a block short when the deadline falls inside it', () => {
+    const due = new Date(now); due.setHours(18, 30, 0, 0);
+    const a = item({ title: 'Due tonight', dueDate: due, remainingMinutes: 120 });
+    const plan = generateWeekPlan([a], { dailyMinutes: [180, 180], preferredTime: 'evening' }, now);
+    const blocks = plan.days.flatMap((d) => d.blocks);
+    expect(blocks).toHaveLength(1);
+    expect(blocks[0].end.getTime()).toBe(due.getTime());
+    expect(plan.warnings.join(' ')).toContain('Due tonight');
+  });
+
   it('respects the course filter', () => {
     const a = item({ courseId: 'keep' });
     const b = item({ courseId: 'drop' });
