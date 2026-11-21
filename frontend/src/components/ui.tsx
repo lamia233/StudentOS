@@ -60,7 +60,7 @@ export function IconButton({ label, className, children, ...rest }: ButtonHTMLAt
 
 export function Card({ className, children, as: As = 'section', ...rest }: { className?: string; children: ReactNode; as?: 'section' | 'div' | 'article' } & Record<string, unknown>) {
   return (
-    <As className={cn('rounded-2xl border border-slate-200/80 bg-white shadow-card dark:border-slate-800 dark:bg-slate-900', className)} {...rest}>
+    <As className={cn('min-w-0 rounded-2xl border border-slate-200/80 bg-white shadow-card dark:border-slate-800 dark:bg-slate-900', className)} {...rest}>
       {children}
     </As>
   );

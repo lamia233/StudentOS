@@ -64,7 +64,7 @@ export default function Planner() {
       <PageHeader title="Smart Study Planner" icon={<Sparkles className="h-5 w-5" />} description="Transparent priority scores turn your deadlines, exams and effort into a realistic weekly plan." />
 
       <div className="grid gap-6 xl:grid-cols-5">
-        <div className="space-y-6 xl:col-span-2">
+        <div className="min-w-0 space-y-6 xl:col-span-2">
           <Card>
             <CardHeader title="Plan My Week" subtitle="Set your availability, then generate" icon={<Wand2 className="h-4 w-4" />} />
             <div className="grid gap-4 p-5 sm:grid-cols-2">
@@ -121,7 +121,7 @@ export default function Planner() {
           </Card>
         </div>
 
-        <div className="xl:col-span-3">
+        <div className="min-w-0 xl:col-span-3">
           <Card>
             <CardHeader
               title="Your week"
