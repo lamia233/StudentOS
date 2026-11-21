@@ -156,6 +156,7 @@ The demo workspace belongs to *Nusrat*, a 12th-semester CSE student at United In
 | `JWT_SECRET` | prod | Long random string for signing sessions (dev fallback provided) |
 | `ENCRYPTION_KEY` | prod | Long random string; encrypts Notion tokens at rest (AES-256-GCM) |
 | `NOTION_TOKEN` | no | Server-side Notion integration token for live mode |
+| `NOTION_OWNER_EMAIL` | no | The only account allowed to use `NOTION_TOKEN`; other users paste their own token |
 | `NOTION_TARGET_ID` | no | Default Notion database or page ID |
 | `OPENAI_API_KEY` | no | Turns on LLM-phrased assistant answers (deterministic fallback otherwise) |
 | `OPENAI_BASE_URL` / `OPENAI_MODEL` | no | Any OpenAI-compatible endpoint (default `gpt-4o-mini`) |
@@ -181,7 +182,7 @@ To use **live mode**:
 
 1. Create an internal integration at https://www.notion.so/my-integrations and copy the token.
 2. In Notion, open the page or database you want StudentOS to use, then **⋯ → Connections → add your integration**.
-3. Either put `NOTION_TOKEN` (and optionally `NOTION_TARGET_ID`) in `backend/.env`, or paste the token and page/database URL on the **Notion** page in the app. The token is encrypted on the server and never sent back to the browser.
+3. Either put `NOTION_TOKEN`, `NOTION_OWNER_EMAIL` (your StudentOS login) and optionally `NOTION_TARGET_ID` in `backend/.env`, or paste the token and page/database URL on the **Notion** page in the app. The token is encrypted on the server and never sent back to the browser.
 4. Click **Sync to Notion**:
    - **Database target:** each item becomes a row. StudentOS maps title, status, dates, priority and course onto matching properties when they exist.
    - **Page target:** each item becomes a child page.
