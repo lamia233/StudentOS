@@ -95,6 +95,7 @@ export interface DailyFocusItem {
   color: string | null;
   minutes: number;
   score: number;
+  priority: string;
   priorityLabel: string;
   reason: string;
   dueDate: Date | null;
@@ -119,6 +120,7 @@ export function planDay(ranked: ScoredItem[], availableMinutes: number): DailyFo
       color: item.color,
       minutes,
       score: item.score,
+      priority: item.priority,
       priorityLabel: priorityLabel(item.score),
       reason: item.reason,
       dueDate: item.dueDate,

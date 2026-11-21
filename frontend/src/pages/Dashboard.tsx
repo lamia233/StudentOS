@@ -105,7 +105,7 @@ export default function Dashboard() {
                       <p className="truncate text-xs text-slate-500">{f.reason}</p>
                     </div>
                     <div className="hidden text-right sm:block">
-                      <PriorityBadge priority={f.priorityLabel} />
+                      <PriorityBadge priority={f.priority} />
                       <p className="mt-1 text-xs text-slate-500">{formatMinutes(f.minutes)}</p>
                     </div>
                     <Button size="sm" variant="ghost" aria-label={`Focus on ${f.title}`} onClick={() => navigate(`/app/focus?title=${encodeURIComponent(f.title)}&minutes=${Math.min(f.minutes, 50)}&kind=${f.kind}&id=${f.id}`)}>

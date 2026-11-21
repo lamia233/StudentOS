@@ -53,7 +53,7 @@ export async function ruleBasedAnswer(userId: string, question: string, now: Dat
         break;
       }
       lines.push(`With about **${fmtMin(dash.availableMinutes)}** available today, I'd prioritize:`);
-      dash.focus.forEach((f, i) => lines.push(`${i + 1}. **${f.title}** — ${fmtMin(f.minutes)} · ${f.priorityLabel} priority (${f.reason})`));
+      dash.focus.forEach((f, i) => lines.push(`${i + 1}. **${f.title}** — ${fmtMin(f.minutes)} · ${f.priority} priority (${f.reason})`));
       if (dash.nextDeadline) lines.push('', `Your next important deadline is **${dash.nextDeadline.title}** — ${dash.nextDeadline.label}.`);
       lines.push('', 'Ranking uses the StudentOS priority score: deadline urgency + priority + remaining effort + exam proximity + completion.');
       break;

@@ -234,6 +234,7 @@ export interface FocusItem {
   color: string | null;
   minutes: number;
   score: number;
+  priority: Priority;
   priorityLabel: 'Critical' | 'High' | 'Medium' | 'Low';
   reason: string;
   dueDate: string | null;
