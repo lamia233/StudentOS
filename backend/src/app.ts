@@ -13,7 +13,7 @@ import { errorHandler, notFoundHandler } from './middleware/error.js';
 export function createApp() {
   const app = express();
   app.disable('x-powered-by');
-  app.set('trust proxy', 1);
+  app.set('trust proxy', config.trustProxy);
   app.use(helmet({ contentSecurityPolicy: config.isProd ? undefined : false }));
   app.use(cors({ origin: config.corsOrigins, credentials: true }));
   app.use(express.json({ limit: '1mb' }));

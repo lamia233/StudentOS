@@ -7,6 +7,12 @@ function required(name: string, fallbackForDev?: string): string {
   throw new Error(`Missing required environment variable ${name}`);
 }
 
+function parseTrustProxy(v: string | undefined): boolean | number | string {
+  if (!v || v === 'false') return false;
+  if (v === 'true') return true;
+  return /^\d+$/.test(v) ? Number(v) : v;
+}
+
 export const config = {
   port: Number(env.PORT ?? 4000),
   nodeEnv: env.NODE_ENV ?? 'development',
@@ -16,6 +22,8 @@ export const config = {
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean),
+  /** Express `trust proxy` setting. Off by default so clients cannot spoof X-Forwarded-For. */
+  trustProxy: parseTrustProxy(env.TRUST_PROXY),
   jwtSecret: required('JWT_SECRET', 'dev-only-insecure-jwt-secret-change-me'),
   encryptionKey: required('ENCRYPTION_KEY', 'dev-only-insecure-encryption-key'),
   notion: {

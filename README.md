@@ -151,6 +151,7 @@ The demo workspace belongs to *Nusrat*, a 12th-semester CSE student at United In
 | `PORT` | no | API port (default `4000`) |
 | `NODE_ENV` | no | `development` / `production` / `test` |
 | `CORS_ORIGIN` | no | Allowed browser origins, comma-separated (default `http://localhost:5173`) |
+| `TRUST_PROXY` | no | Express `trust proxy` value when behind a reverse proxy (e.g. `1`); off by default |
 | `DATABASE_URL` | yes | `file:./dev.db` for SQLite, or a PostgreSQL URL |
 | `JWT_SECRET` | prod | Long random string for signing sessions (dev fallback provided) |
 | `ENCRYPTION_KEY` | prod | Long random string; encrypts Notion tokens at rest (AES-256-GCM) |
