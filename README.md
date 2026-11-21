@@ -184,7 +184,7 @@ To use **live mode**:
 4. Click **Sync to Notion**:
    - **Database target:** each item becomes a row. StudentOS maps title, status, dates, priority and course onto matching properties when they exist.
    - **Page target:** each item becomes a child page.
-   Re-syncing updates pages it created before instead of duplicating them.
+   For database targets, re-syncing updates the rows StudentOS created earlier instead of duplicating them.
 5. **Import tasks / notes** reads rows of the target database (or to-dos/child pages of a page) back into StudentOS.
 
 Sync history (mode, direction, counts, errors) is shown on the Notion page.
