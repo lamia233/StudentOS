@@ -19,3 +19,6 @@
   .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
   .scrollbar-thin::-webkit-scrollbar-thumb { @apply rounded-full bg-slate-300 dark:bg-slate-700; }
 }
+
+/* Muted text needs a lighter shade on dark surfaces to stay above WCAG AA contrast. */
+.dark .text-slate-500:not([class*='dark:text-']) { color: theme('colors.slate.400'); }
