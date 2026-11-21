@@ -140,6 +140,8 @@ export interface WeekPlanInput {
   blockMinutes?: number;
   breakMinutes?: number;
   startDate?: Date;
+  /** Existing commitments (classes, events, exams) that study blocks must not overlap. */
+  busy?: { start: Date; end: Date }[];
 }
 
 export interface PlanBlock {
@@ -182,6 +184,7 @@ export function generateWeekPlan(items: WorkItem[], input: WeekPlanInput, now: D
     })
     .map((i) => ({ ...i }));
   const remaining = new Map(filtered.map((i) => [i.id, i.remainingMinutes]));
+  const busy = (input.busy ?? []).filter((b) => b.end > b.start).sort((a, b) => a.start.getTime() - b.start.getTime());
 
   const days: WeekPlan['days'] = [];
   for (let d = 0; d < input.dailyMinutes.length; d++) {
@@ -203,7 +206,16 @@ export function generateWeekPlan(items: WorkItem[], input: WeekPlanInput, now: D
       if (!ranked.length) break;
       const pick = ranked.find((r) => !used.has(r.id)) ?? ranked[0];
       const untilDue = pick.dueDate ? Math.floor((pick.dueDate.getTime() - cursor.getTime()) / MS_PER_MIN) : Infinity;
-      const minutes = Math.min(block, pick.remainingMinutes, left, untilDue);
+      let minutes = Math.min(block, pick.remainingMinutes, left, untilDue);
+      const clash = busy.find((b) => b.start < addMinutes(cursor, minutes) && b.end > cursor);
+      if (clash) {
+        const free = Math.floor((clash.start.getTime() - cursor.getTime()) / MS_PER_MIN);
+        if (free < 15) {
+          cursor = new Date(Math.ceil(clash.end.getTime() / (5 * MS_PER_MIN)) * 5 * MS_PER_MIN);
+          continue;
+        }
+        minutes = Math.min(minutes, free);
+      }
       if (minutes < 15 && pick.remainingMinutes >= 15) break;
       const start = cursor;
       const end = addMinutes(start, minutes);

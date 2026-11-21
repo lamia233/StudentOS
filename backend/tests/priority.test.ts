@@ -98,6 +98,16 @@ describe('weekly planner', () => {
     expect(plan.warnings.join(' ')).toContain('Due tonight');
   });
 
+  it('schedules around existing commitments', () => {
+    const at = (h: number, m = 0) => { const d = new Date(now); d.setHours(h, m, 0, 0); return d; };
+    const a = item({ title: 'Essay', dueDate: addDays(now, 3), remainingMinutes: 120 });
+    const busy = [{ start: at(18, 30), end: at(19, 30) }];
+    const plan = generateWeekPlan([a], { dailyMinutes: [120], preferredTime: 'evening', breakMinutes: 0, busy }, now);
+    const blocks = plan.days[0].blocks;
+    expect(blocks.map((b) => [b.start.getHours() * 60 + b.start.getMinutes(), b.minutes])).toEqual([[18 * 60, 30], [19 * 60 + 30, 60], [20 * 60 + 30, 30]]);
+    for (const blk of blocks) for (const x of busy) expect(blk.start < x.end && blk.end > x.start).toBe(false);
+  });
+
   it('respects the course filter', () => {
     const a = item({ courseId: 'keep' });
     const b = item({ courseId: 'drop' });

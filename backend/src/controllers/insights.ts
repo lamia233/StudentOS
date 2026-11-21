@@ -1,6 +1,8 @@
 import type { Request, Response } from 'express';
 import { prisma } from '../lib/prisma.js';
-import { addDays, startOfDay } from '../utils/dates.js';
+import { addDays, addMinutes, setTime, startOfDay } from '../utils/dates.js';
+import { parseJson } from '../utils/json.js';
+import type { ClassMeeting } from '../services/dashboard.js';
 import { getDashboard, deadlineRadar } from '../services/dashboard.js';
 import { productivityOverview } from '../services/analytics.js';
 import { generateRecommendations } from '../services/recommendations.js';
@@ -38,7 +40,20 @@ export async function today(req: Request, res: Response) {
 export async function weekPlan(req: Request, res: Response) {
   const now = new Date();
   const items = await collectWorkItems(req.userId, now);
-  res.json(generateWeekPlan(items, req.body, now));
+  const from = startOfDay(now);
+  const to = addDays(from, req.body.dailyMinutes.length);
+  const [events, courses, exams] = await Promise.all([
+    prisma.event.findMany({ where: { userId: req.userId, allDay: false, source: { not: 'planner' }, start: { lt: to }, end: { gt: from } }, select: { start: true, end: true } }),
+    prisma.course.findMany({ where: { userId: req.userId }, select: { schedule: true } }),
+    prisma.exam.findMany({ where: { userId: req.userId, date: { gte: from, lt: to } }, select: { date: true } }),
+  ]);
+  const busy = [...events, ...exams.map((e) => ({ start: e.date, end: addMinutes(e.date, 120) }))];
+  for (let d = from; d < to; d = addDays(d, 1)) {
+    for (const c of courses) {
+      for (const m of parseJson<ClassMeeting[]>(c.schedule, []).filter((m) => m.day === d.getDay())) busy.push({ start: setTime(d, m.start), end: setTime(d, m.end) });
+    }
+  }
+  res.json(generateWeekPlan(items, { ...req.body, busy }, now));
 }
 /** Saves generated blocks as "study" calendar events, replacing earlier planner events in the same range. */
 export async function savePlan(req: Request, res: Response) {
